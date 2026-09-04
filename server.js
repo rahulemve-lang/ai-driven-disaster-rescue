@@ -71,3 +71,4 @@ app.get('/{*splat}', (req, res) => {
 
 // Socket.io Real-Time Synchronization Engine
 io.on('connection', (socket) => {
+  socket.on('rescuer:location_update', async (data) => {
