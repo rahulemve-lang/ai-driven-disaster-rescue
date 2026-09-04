@@ -84,3 +84,4 @@ io.on('connection', (socket) => {
   socket.on('victim:join_room', (requestId) => {
     socket.join(requestId);
   });
+});
