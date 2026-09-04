@@ -46,3 +46,4 @@ app.post('/api/requests', async (req, res) => {
 });
 
 // REST Endpoint: Get Nearby Rescuers
+app.get('/api/rescuers/nearby', async (req, res) => {
