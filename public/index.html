@@ -460,3 +460,4 @@
   /* WEB SPEECH API HANDS-FREE VOICE NAVIGATION */
   function toggleVoiceNavigation() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
