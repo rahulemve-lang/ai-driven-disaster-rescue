@@ -70,3 +70,4 @@ app.get('/{*splat}', (req, res) => {
 });
 
 // Socket.io Real-Time Synchronization Engine
+io.on('connection', (socket) => {
