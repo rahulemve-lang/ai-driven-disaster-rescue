@@ -53,3 +53,4 @@ app.get('/api/rescuers/nearby', async (req, res) => {
       isOnline: true,
       location: {
         $near: {
+          $geometry: { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] },
