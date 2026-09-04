@@ -5,3 +5,4 @@ const RequestSchema = new mongoose.Schema({
   victimName: { type: String, default: 'Anonymous' },
   injury: { type: String },
   situation: { type: String },
+  photoUrl: { type: String },
