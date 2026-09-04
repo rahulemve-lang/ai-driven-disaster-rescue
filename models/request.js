@@ -16,3 +16,4 @@ const RequestSchema = new mongoose.Schema({
   assignedRescuer: { type: mongoose.Schema.Types.ObjectId, ref: 'Rescuer' }
 }, { timestamps: true });
 
+RequestSchema.index({ location: '2dsphere' });
