@@ -14,3 +14,4 @@ const RequestSchema = new mongoose.Schema({
     coordinates: { type: [Number], required: true }
   },
   assignedRescuer: { type: mongoose.Schema.Types.ObjectId, ref: 'Rescuer' }
+}, { timestamps: true });
