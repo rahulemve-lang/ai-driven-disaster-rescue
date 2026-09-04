@@ -419,3 +419,4 @@
   function hide(id) { document.getElementById(id)?.classList.add('hidden'); }
 
   function setTab(activeId) {
+    ['tab-home', 'tab-features', 'tab-impact'].forEach(id => document.getElementById(id)?.classList.remove('active'));
