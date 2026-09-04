@@ -22,3 +22,4 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Connect to Database
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/beacon');
 
+// REST Endpoint: Submit SOS Request
