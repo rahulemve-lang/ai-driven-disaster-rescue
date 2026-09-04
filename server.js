@@ -40,3 +40,4 @@ app.post('/api/requests', async (req, res) => {
     io.emit('incident:new', newRequest);
 
     res.status(201).json({ success: true, data: newRequest });
+  } catch (err) {
