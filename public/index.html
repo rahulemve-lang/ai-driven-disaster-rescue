@@ -454,3 +454,4 @@
 
   function toggleTheme() {
     const curr = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', curr);
