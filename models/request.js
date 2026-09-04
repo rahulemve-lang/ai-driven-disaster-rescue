@@ -10,3 +10,4 @@ const RequestSchema = new mongoose.Schema({
   urgencyLevel: { type: String, enum: ['low', 'medium', 'high', 'critical'], default: 'high' },
   urgencyScore: { type: Number, default: 5 },
   location: {
+    type: { type: String, enum: ['Point'], default: 'Point' },
