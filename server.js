@@ -32,3 +32,4 @@ app.post('/api/requests', async (req, res) => {
       victimName: name,
       injury,
       situation,
+      photoUrl,
