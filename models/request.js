@@ -13,3 +13,4 @@ const RequestSchema = new mongoose.Schema({
     type: { type: String, enum: ['Point'], default: 'Point' },
     coordinates: { type: [Number], required: true }
   },
+  assignedRescuer: { type: mongoose.Schema.Types.ObjectId, ref: 'Rescuer' }
