@@ -14,3 +14,4 @@ const RescuerSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 RescuerSchema.index({ location: '2dsphere' });
+module.exports = mongoose.model('Rescuer', RescuerSchema);
