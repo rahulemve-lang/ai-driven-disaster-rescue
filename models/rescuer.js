@@ -5,3 +5,4 @@ const RescuerSchema = new mongoose.Schema({
   mobile: { type: String, required: true },
   capability: { type: String, required: true },
   equipment: [{ type: String }],
+  mode: { type: String, default: 'car' },
