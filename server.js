@@ -7,3 +7,4 @@ const path = require('path');
 require('dotenv').config();
 
 const Request = require('./models/Request');
+const Rescuer = require('./models/Rescuer');
