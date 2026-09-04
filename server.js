@@ -73,3 +73,4 @@ app.get('/{*splat}', (req, res) => {
 io.on('connection', (socket) => {
   socket.on('rescuer:location_update', async (data) => {
     const { rescuerId, lat, lng, requestId } = data;
+    await Rescuer.findByIdAndUpdate(rescuerId, {
