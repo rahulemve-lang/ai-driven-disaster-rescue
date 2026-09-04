@@ -76,3 +76,4 @@ io.on('connection', (socket) => {
     await Rescuer.findByIdAndUpdate(rescuerId, {
       location: { type: 'Point', coordinates: [lng, lat] }
     });
+    if (requestId) {
