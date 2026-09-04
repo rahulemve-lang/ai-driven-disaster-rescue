@@ -35,3 +35,4 @@ app.post('/api/requests', async (req, res) => {
       photoUrl,
       location: { type: 'Point', coordinates: [lng, lat] }
     });
+
