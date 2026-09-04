@@ -27,3 +27,4 @@ app.post('/api/requests', async (req, res) => {
   try {
     const { requestId, name, injury, situation, lat, lng, photoUrl } = req.body;
     
+    const newRequest = await Request.create({
