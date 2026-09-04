@@ -491,3 +491,4 @@
         const cmd = event.results[lastIndex][0].transcript.trim().toLowerCase();
         document.getElementById('voiceStatusTxt').textContent = `Heard: "${cmd}"`;
 
+        if (cmd.includes('help') || cmd.includes('injured') || cmd.includes('trapped') || cmd.includes('sos')) {
