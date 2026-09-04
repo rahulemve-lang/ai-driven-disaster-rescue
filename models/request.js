@@ -6,3 +6,4 @@ const RequestSchema = new mongoose.Schema({
   injury: { type: String },
   situation: { type: String },
   photoUrl: { type: String },
+  status: { type: String, enum: ['pending', 'matched', 'resolved', 'cancelled'], default: 'pending' },
