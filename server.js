@@ -36,3 +36,4 @@ app.post('/api/requests', async (req, res) => {
       location: { type: 'Point', coordinates: [lng, lat] }
     });
 
+    // Broadcast new incident to all connected rescuers
