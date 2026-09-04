@@ -7,3 +7,4 @@ const RescuerSchema = new mongoose.Schema({
   equipment: [{ type: String }],
   mode: { type: String, default: 'car' },
   isOnline: { type: Boolean, default: false },
+  location: {
