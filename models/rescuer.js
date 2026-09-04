@@ -12,3 +12,4 @@ const RescuerSchema = new mongoose.Schema({
     coordinates: { type: [Number] }
   }
 }, { timestamps: true });
+
