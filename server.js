@@ -80,3 +80,4 @@ io.on('connection', (socket) => {
       io.to(requestId).emit('rescuer:moved', { lat, lng });
     }
   });
+
