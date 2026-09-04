@@ -39,3 +39,4 @@ app.post('/api/requests', async (req, res) => {
     // Broadcast new incident to all connected rescuers
     io.emit('incident:new', newRequest);
 
+    res.status(201).json({ success: true, data: newRequest });
