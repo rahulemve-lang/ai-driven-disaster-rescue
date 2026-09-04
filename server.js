@@ -59,3 +59,4 @@ app.get('/api/rescuers/nearby', async (req, res) => {
       }
     });
     res.json({ success: true, count: rescuers.length, data: rescuers });
+  } catch (err) {
