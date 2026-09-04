@@ -8,3 +8,4 @@ const RescuerSchema = new mongoose.Schema({
   mode: { type: String, default: 'car' },
   isOnline: { type: Boolean, default: false },
   location: {
+    type: { type: String, enum: ['Point'], default: 'Point' },
