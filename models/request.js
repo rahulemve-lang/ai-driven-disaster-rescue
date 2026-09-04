@@ -8,3 +8,4 @@ const RequestSchema = new mongoose.Schema({
   photoUrl: { type: String },
   status: { type: String, enum: ['pending', 'matched', 'resolved', 'cancelled'], default: 'pending' },
   urgencyLevel: { type: String, enum: ['low', 'medium', 'high', 'critical'], default: 'high' },
+  urgencyScore: { type: Number, default: 5 },
