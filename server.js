@@ -69,3 +69,4 @@ app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Socket.io Real-Time Synchronization Engine
