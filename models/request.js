@@ -11,3 +11,4 @@ const RequestSchema = new mongoose.Schema({
   urgencyScore: { type: Number, default: 5 },
   location: {
     type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number], required: true }
