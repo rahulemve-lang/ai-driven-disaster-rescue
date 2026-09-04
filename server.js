@@ -56,3 +56,4 @@ app.get('/api/rescuers/nearby', async (req, res) => {
           $geometry: { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] },
           $maxDistance: 5000 // 5km radius
         }
+      }
