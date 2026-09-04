@@ -26,3 +26,4 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/beacon');
 app.post('/api/requests', async (req, res) => {
   try {
     const { requestId, name, injury, situation, lat, lng, photoUrl } = req.body;
+    
