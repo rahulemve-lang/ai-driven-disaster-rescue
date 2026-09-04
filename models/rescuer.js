@@ -9,3 +9,4 @@ const RescuerSchema = new mongoose.Schema({
   isOnline: { type: Boolean, default: false },
   location: {
     type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number] }
