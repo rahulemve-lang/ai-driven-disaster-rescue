@@ -10,3 +10,4 @@ const Request = require('./models/Request');
 const Rescuer = require('./models/Rescuer');
 
 const app = express();
+const server = http.createServer(app);
