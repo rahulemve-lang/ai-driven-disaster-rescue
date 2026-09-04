@@ -41,3 +41,4 @@ app.post('/api/requests', async (req, res) => {
 
     res.status(201).json({ success: true, data: newRequest });
   } catch (err) {
+    res.status(500).json({ error: err.message });
