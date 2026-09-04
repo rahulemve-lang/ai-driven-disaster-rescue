@@ -31,3 +31,4 @@ app.post('/api/requests', async (req, res) => {
       requestId,
       victimName: name,
       injury,
+      situation,
