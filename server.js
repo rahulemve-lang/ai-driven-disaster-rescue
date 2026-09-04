@@ -57,3 +57,4 @@ app.get('/api/rescuers/nearby', async (req, res) => {
           $maxDistance: 5000 // 5km radius
         }
       }
+    });
