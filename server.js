@@ -29,3 +29,4 @@ app.post('/api/requests', async (req, res) => {
     
     const newRequest = await Request.create({
       requestId,
+      victimName: name,
