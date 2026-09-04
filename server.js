@@ -51,3 +51,4 @@ app.get('/api/rescuers/nearby', async (req, res) => {
   try {
     const rescuers = await Rescuer.find({
       isOnline: true,
+      location: {
