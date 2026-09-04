@@ -65,3 +65,4 @@ app.get('/api/rescuers/nearby', async (req, res) => {
 });
 
 // Serve frontend on root URL route fallback
+app.get('/{*splat}', (req, res) => {
