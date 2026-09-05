@@ -19,28 +19,38 @@
 <script src="/socket.io/socket.io.js"></script>
 
 <style>
+  /* ==========================================================================
+     CSS VARIABLES & DESIGN SYSTEM
+     ========================================================================== */
   :root {
     --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
     --font-body: 'Inter', sans-serif;
 
+    /* Theme: Dark Tactical (Default) */
     --bg-base: #090D14;
     --bg-surface: #101623;
     --bg-surface-elevated: #162032;
     --bg-surface-hover: #1E2B42;
     --border-subtle: rgba(255, 255, 255, 0.08);
     --border-strong: rgba(255, 255, 255, 0.16);
+    --border-focus: #3B82F6;
 
     --text-primary: #F8FAFC;
     --text-secondary: #94A3B8;
     --text-muted: #64748B;
 
+    /* Emergency Accents */
     --sos-crimson: #EF4444;
     --sos-crimson-dim: rgba(239, 68, 68, 0.14);
     --sos-crimson-glow: rgba(239, 68, 68, 0.35);
 
     --safe-emerald: #10B981;
     --safe-emerald-dim: rgba(16, 185, 129, 0.14);
+    --safe-emerald-glow: rgba(16, 185, 129, 0.35);
+
+    --warn-amber: #F59E0B;
+    --warn-amber-dim: rgba(245, 158, 11, 0.14);
 
     --signal-blue: #3B82F6;
     --signal-blue-dim: rgba(59, 130, 246, 0.14);
@@ -52,6 +62,8 @@
 
     --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.35);
     --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.45);
+    --shadow-glow-crimson: 0 0 28px rgba(239, 68, 68, 0.45);
+    --shadow-glow-emerald: 0 0 24px rgba(16, 185, 129, 0.35);
 
     --transition-fast: 0.16s ease;
     --transition-norm: 0.24s cubic-bezier(0.16, 1, 0.3, 1);
@@ -64,14 +76,30 @@
     --bg-surface-hover: #F1F5F9;
     --border-subtle: rgba(0, 0, 0, 0.08);
     --border-strong: rgba(0, 0, 0, 0.16);
+    --border-focus: #2563EB;
 
     --text-primary: #0F172A;
     --text-secondary: #475569;
     --text-muted: #64748B;
 
     --sos-crimson: #DC2626;
+    --sos-crimson-dim: rgba(220, 38, 38, 0.1);
+    --sos-crimson-glow: rgba(220, 38, 38, 0.25);
+
     --safe-emerald: #059669;
+    --safe-emerald-dim: rgba(5, 150, 105, 0.1);
+    --safe-emerald-glow: rgba(5, 150, 105, 0.25);
+
+    --warn-amber: #D97706;
+    --warn-amber-dim: rgba(217, 119, 6, 0.1);
+
     --signal-blue: #2563EB;
+    --signal-blue-dim: rgba(37, 99, 235, 0.1);
+
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.06);
+    --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --shadow-glow-crimson: 0 0 24px rgba(220, 38, 38, 0.25);
+    --shadow-glow-emerald: 0 0 20px rgba(5, 150, 105, 0.2);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -107,9 +135,10 @@
     position: relative;
     transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
+
   #app-container.wide-mode { max-width: 1180px; }
 
-  /* NAVIGATION & TOP BAR */
+  /* TOP BAR & NAVIGATION */
   .top-bar {
     position: sticky;
     top: 0;
@@ -123,97 +152,180 @@
     justify-content: space-between;
     gap: 12px;
   }
+  [data-theme="light"] .top-bar { background: rgba(255, 255, 255, 0.9); }
 
   .brand-group { display: flex; align-items: center; gap: 12px; cursor: pointer; }
   .brand-logo-radar {
     width: 38px; height: 38px; border-radius: 10px;
     background: linear-gradient(135deg, var(--sos-crimson) 0%, #B91C1C 100%);
     display: flex; align-items: center; justify-content: center; color: #fff;
+    position: relative; box-shadow: 0 0 16px var(--sos-crimson-glow);
+  }
+  .brand-logo-radar::after {
+    content: ''; position: absolute; inset: -3px; border-radius: 13px;
+    border: 1px solid var(--sos-crimson); opacity: 0.6;
+    animation: radarPing 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  @keyframes radarPing {
+    0% { transform: scale(1); opacity: 0.8; }
+    80%, 100% { transform: scale(1.4); opacity: 0; }
   }
 
   .brand-title { font-weight: 800; font-size: 18px; letter-spacing: -0.4px; display: flex; align-items: center; gap: 8px; }
   .brand-badge {
-    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
     background: var(--sos-crimson-dim); color: var(--sos-crimson); padding: 2px 7px;
     border-radius: var(--radius-pill); border: 1px solid rgba(239, 68, 68, 0.3);
   }
 
   .top-actions { display: flex; align-items: center; gap: 6px; }
+
   .icon-btn {
     width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border-subtle);
     background: var(--bg-surface-elevated); color: var(--text-secondary);
     display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition-fast);
   }
-  .icon-btn.voice-active { background: var(--sos-crimson); color: #fff; border-color: var(--sos-crimson); animation: pulseVoice 1.5s infinite; }
-  @keyframes pulseVoice { 0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } }
+  .icon-btn:hover { background: var(--bg-surface-hover); color: var(--text-primary); border-color: var(--border-strong); }
+  .icon-btn.active { background: var(--sos-crimson); color: #fff; border-color: var(--sos-crimson); }
 
+  .pill-btn {
+    font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: var(--radius-pill);
+    border: 1px solid var(--border-subtle); background: var(--bg-surface-elevated); color: var(--text-secondary);
+    cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: var(--transition-fast); text-decoration: none;
+  }
+  .pill-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+  .pill-btn.primary { background: var(--signal-blue-dim); color: var(--signal-blue); border-color: rgba(59, 130, 246, 0.3); }
+
+  /* NAVIGATION MENU BAR */
   .nav-menu-bar {
     background: var(--bg-surface-elevated); border-bottom: 1px solid var(--border-subtle);
-    padding: 8px 16px; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
+    padding: 8px 16px; display: flex; gap: 10px; overflow-x: auto; white-space: nowrap;
   }
   .nav-tab {
-    font-size: 13px; font-weight: 600; color: var(--text-secondary); padding: 6px 14px;
-    border-radius: var(--radius-pill); cursor: pointer; border: 1px solid transparent; background: transparent; transition: var(--transition-fast);
+    font-size: 13px; font-weight: 600; color: var(--text-secondary); padding: 6px 12px;
+    border-radius: var(--radius-pill); cursor: pointer; border: 1px solid transparent; transition: var(--transition-fast);
   }
+  .nav-tab:hover { color: var(--text-primary); background: var(--bg-surface-hover); }
   .nav-tab.active { background: var(--signal-blue-dim); color: var(--signal-blue); border-color: rgba(59, 130, 246, 0.3); }
 
-  /* VOICE NAV HUD BANNER */
-  .voice-hud {
-    background: linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
-    border-bottom: 1px solid var(--border-subtle); padding: 10px 16px; font-size: 12px;
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  /* TELEMETRY BAR */
+  .telemetry-bar {
+    background: var(--bg-base); border-bottom: 1px solid var(--border-subtle);
+    padding: 6px 16px; font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);
+    display: flex; align-items: center; justify-content: space-between; overflow-x: auto; white-space: nowrap; gap: 12px;
   }
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--safe-emerald);
+    box-shadow: 0 0 8px var(--safe-emerald); animation: livePulse 2s ease infinite; display: inline-block;
+  }
+  @keyframes livePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
 
-  /* SCREENS */
-  .screen { flex: 1; display: flex; flex-direction: column; padding: 24px 20px 80px; gap: 20px; }
+  /* SCREENS & CARDS */
+  .screen { flex: 1; display: flex; flex-direction: column; padding: 24px 20px 80px; gap: 20px; animation: fadeInScreen 0.25s ease; }
+  @keyframes fadeInScreen { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .hidden { display: none !important; }
 
-  h1.screen-title { font-size: 28px; font-weight: 800; letter-spacing: -0.6px; line-height: 1.2; }
+  h1.screen-title { font-size: 28px; font-weight: 800; letter-spacing: -0.6px; line-height: 1.2; color: var(--text-primary); }
+  h2.section-heading { font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
   p.screen-lede { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
 
-  /* 10K BANNER */
+  /* RESCUED BANNER ON HOMEPAGE */
   .rescued-counter-banner {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 22, 35, 0.9) 100%);
     border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-lg); padding: 20px;
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: var(--shadow-glow-emerald);
   }
   .rescued-number { font-size: 38px; font-weight: 800; font-family: var(--font-mono); color: var(--safe-emerald); line-height: 1; }
+  .rescued-text { font-size: 13px; color: var(--text-secondary); }
 
-  /* CARDS & GRIDS */
+  /* HERO & CHOICE CARDS */
+  .hero-banner {
+    position: relative; border-radius: var(--radius-lg);
+    background: linear-gradient(145deg, rgba(239, 68, 68, 0.12) 0%, rgba(16, 22, 35, 0.85) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.28); padding: 24px; overflow: hidden;
+  }
+  .crisis-pulse-tag {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-pill);
+    background: var(--sos-crimson); color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 12px;
+  }
+
   .choice-container { display: grid; grid-template-columns: 1fr; gap: 14px; }
   @media (min-width: 768px) { .wide-mode .choice-container { grid-template-columns: 1fr 1fr; } }
 
   .choice-card-pro {
     background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
-    padding: 22px; cursor: pointer; text-align: left; color: var(--text-primary); transition: var(--transition-norm);
+    padding: 22px; cursor: pointer; text-align: left; transition: all var(--transition-norm); color: var(--text-primary);
   }
+  .choice-card-pro:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow-soft); }
   .choice-card-pro.sos-card { background: linear-gradient(180deg, rgba(239, 68, 68, 0.16) 0%, var(--bg-surface-elevated) 80%); border-color: rgba(239, 68, 68, 0.4); }
+  .choice-card-pro.rescuer-card-entry { background: linear-gradient(180deg, rgba(16, 185, 129, 0.12) 0%, var(--bg-surface-elevated) 80%); border-color: rgba(16, 185, 129, 0.35); }
 
+  .choice-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .choice-icon-wrap { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+  .sos-card .choice-icon-wrap { background: var(--sos-crimson); color: #fff; }
+  .rescuer-card-entry .choice-icon-wrap { background: var(--safe-emerald); color: #fff; }
+  .choice-title { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+  .choice-desc { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; }
+
+  /* FEATURE GRID */
   .feature-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
   @media (min-width: 640px) { .feature-grid { grid-template-columns: 1fr 1fr; } }
-  .feature-card { background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .feature-card {
+    background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+    padding: 20px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .feature-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--signal-blue-dim); color: var(--signal-blue); display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-  /* DISASTER IMPACT CARDS */
-  .disaster-card {
+  /* CONTRIBUTIONS & IMPACT CARDS */
+  .impact-hero-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .impact-stat-card {
+    background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+    padding: 16px; text-align: center;
+  }
+  .impact-stat-number { font-size: 26px; font-weight: 800; font-family: var(--font-mono); color: var(--signal-blue); }
+  .impact-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-top: 4px; }
+
+  .disaster-event-card {
     background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
-    overflow: hidden; display: flex; flex-direction: column; gap: 14px; margin-bottom: 12px;
+    overflow: hidden; display: flex; flex-direction: column; gap: 14px; padding-bottom: 16px;
   }
-  .disaster-img { width: 100%; height: 210px; object-fit: cover; }
-  .disaster-body { padding: 0 18px 18px; display: flex; flex-direction: column; gap: 8px; }
-  .rescue-share-tag {
+  .disaster-image-holder { width: 100%; height: 200px; position: relative; overflow: hidden; background: #000; }
+  .disaster-image-holder img { width: 100%; height: 100%; object-fit: cover; }
+  .disaster-badge { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: var(--radius-pill); }
+  .disaster-content { padding: 0 18px; display: flex; flex-direction: column; gap: 8px; }
+  .rescue-highlight-box {
     background: var(--safe-emerald-dim); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm);
-    padding: 10px 14px; font-size: 13px; color: var(--safe-emerald); font-weight: 700; display: flex; justify-content: space-between;
+    padding: 10px 14px; font-size: 13px; color: var(--safe-emerald); font-weight: 600; display: flex; justify-content: space-between; align-items: center;
   }
 
+  /* BUTTONS & INPUTS */
   .btn { border: none; border-radius: var(--radius-md); padding: 14px 20px; font-weight: 700; font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
-  .btn-sos-main { background: linear-gradient(135deg, var(--sos-crimson) 0%, #C51E1E 100%); color: #FFFFFF; }
-  .btn-safe-main { background: linear-gradient(135deg, var(--safe-emerald) 0%, #047857 100%); color: #FFFFFF; }
+  .btn-block { width: 100%; }
+  .btn-sos-main { background: linear-gradient(135deg, var(--sos-crimson) 0%, #C51E1E 100%); color: #FFFFFF; box-shadow: var(--shadow-glow-crimson); }
+  .btn-safe-main { background: linear-gradient(135deg, var(--safe-emerald) 0%, #047857 100%); color: #FFFFFF; box-shadow: var(--shadow-glow-emerald); }
+  .btn-outline { background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); color: var(--text-primary); }
 
-  .toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 10000; }
-  .toast-bubble { background: var(--bg-surface-elevated); color: var(--text-primary); border: 1px solid var(--border-strong); padding: 12px 20px; border-radius: var(--radius-pill); font-size: 13.5px; font-weight: 600; }
+  .form-stack { display: flex; flex-direction: column; gap: 16px; }
+  .input-text, .input-select, .input-textarea {
+    width: 100%; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm); color: var(--text-primary); padding: 12px 14px; font-size: 14.5px; outline: none;
+  }
+
+  .toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toast-bubble { background: var(--bg-surface-elevated); color: var(--text-primary); border: 1px solid var(--border-strong); padding: 12px 20px; border-radius: var(--radius-pill); font-size: 13.5px; font-weight: 600; box-shadow: var(--shadow-card); pointer-events: auto; }
+
+  #strobeOverlay { position: fixed; inset: 0; z-index: 99999; background: #fff; display: none; align-items: center; justify-content: center; cursor: pointer; }
+  #strobeOverlay.flashing { display: flex; animation: strobeFlash 0.12s infinite; }
+  @keyframes strobeFlash { 0%, 49% { background: #FFFFFF; } 50%, 100% { background: #000000; } }
+
+  .footer-caption { text-align: center; font-size: 12px; color: var(--text-muted); padding: 24px 16px; border-top: 1px solid var(--border-subtle); margin-top: auto; }
 </style>
 </head>
 <body>
+
+<div id="strobeOverlay" onclick="toggleScreenStrobe(false)">
+  <div style="background:rgba(0,0,0,0.85);color:#fff;padding:12px 24px;border-radius:30px;font-weight:700;">🚨 VISUAL SOS STROBE ACTIVE · TAP TO STOP</div>
+</div>
 
 <div class="page-wrapper">
   <div id="app-container">
@@ -228,36 +340,35 @@
       </div>
 
       <div class="top-actions">
-        <button class="icon-btn" id="voiceNavBtn" onclick="toggleVoiceNavigation()" title="Hands-Free Voice Navigation">🎙️</button>
-        <button class="icon-btn" onclick="toggleWideMode()" title="Expand Dashboard View">🖥️</button>
-        <button class="icon-btn" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+        <button class="icon-btn" id="voiceNavBtn" onclick="toggleGlobalVoiceNav()" title="Voice Nav Controls">🎙️</button>
+        <button class="icon-btn" onclick="toggleWideMode()" title="Expand View">🖥️</button>
+        <button class="icon-btn" onclick="toggleTheme()" title="Toggle Theme"><svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle></svg></button>
       </div>
     </header>
 
-    <!-- VOICE NAVIGATION ASSISTANT HUD -->
-    <div class="voice-hud hidden" id="voiceHud">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="color:var(--sos-crimson);font-weight:700;">🎙️ VOICE COMMANDS ACTIVE:</span>
-        <span id="voiceStatusTxt" style="color:var(--text-secondary);">Say "Help", "Features", "Contributions", "Home", or "Siren"</span>
-      </div>
-      <button onclick="toggleVoiceNavigation()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-weight:700;">✕</button>
-    </div>
-
-    <!-- TABS -->
+    <!-- NAVIGATION TABS -->
     <nav class="nav-menu-bar">
       <button class="nav-tab active" id="tab-home" onclick="goLanding()">Home</button>
       <button class="nav-tab" id="tab-features" onclick="goFeatures()">Website Features</button>
-      <button class="nav-tab" id="tab-impact" onclick="goImpact()">Significant Contributions</button>
+      <button class="nav-tab" id="tab-impact" onclick="goImpact()">Contributions &amp; Rescues</button>
     </nav>
+
+    <!-- TELEMETRY TICKER -->
+    <div class="telemetry-bar">
+      <div><span class="live-dot"></span> DISPATCH RADAR ONLINE</div>
+      <div id="gpsTelemetry">GPS: STANDBY</div>
+      <div id="activeRescuersTelemetry">VOLUNTEERS: DETECTING...</div>
+    </div>
 
     <!-- =====================================================================
          PAGE 1: HOMEPAGE WITH 10,000+ RESCUED STAT
          ===================================================================== -->
     <main class="screen" id="screen-landing">
-      <div>
+      <div class="hero-banner">
+        <div class="crisis-pulse-tag"><span class="live-dot" style="background:#fff;"></span> CRISIS RESCUE NETWORK</div>
         <h1 class="screen-title">Get help. Give help.<br/><span style="color:var(--sos-crimson);">Fast.</span></h1>
         <p class="screen-lede" style="margin-top:8px;">
-          Beacon synchronizes trapped or injured disaster victims with local volunteer rescuers using live route calculation and AI injury triage.
+          Beacon instantly synchronizes trapped or injured people with local volunteer rescuers, calculating live routes, AI injury triage, and hospital maps.
         </p>
       </div>
 
@@ -265,137 +376,208 @@
       <div class="rescued-counter-banner">
         <div>
           <div class="rescued-number">10,840+</div>
-          <div class="rescued-text"><b>Lives Saved &amp; Rescued</b> across 45 major catastrophe zones</div>
+          <div class="rescued-text"><b>Lives Saved &amp; Rescued</b> across 45 major global disaster zones</div>
         </div>
-        <button class="btn btn-safe-main" onclick="goImpact()" style="font-size:12px;padding:8px 14px;">View Impact ↗</button>
+        <button class="pill-btn primary" onclick="goImpact()">View Report ↗</button>
       </div>
 
       <div class="choice-container">
         <button class="choice-card-pro sos-card" onclick="goVictim()">
-          <div style="font-size:24px;margin-bottom:8px;">🆘</div>
-          <div style="font-size:18px;font-weight:800;margin-bottom:6px;">Injured or Trapped</div>
-          <div style="font-size:13.5px;color:var(--text-secondary);">Broadcast distress coordinates, capture injury photos, and match with nearest volunteer responder.</div>
+          <div class="choice-header">
+            <div class="choice-icon-wrap">🆘</div>
+            <div>➔</div>
+          </div>
+          <div class="choice-title">Injured or Trapped</div>
+          <div class="choice-desc">Broadcast emergency distress coordinates, AI damage photos, and lock on to nearest volunteer responder.</div>
         </button>
 
-        <button class="choice-card-pro" onclick="goRescuerEntry()">
-          <div style="font-size:24px;margin-bottom:8px;">🚑</div>
-          <div style="font-size:18px;font-weight:800;margin-bottom:6px;">Volunteer Rescuer</div>
-          <div style="font-size:13.5px;color:var(--text-secondary);">Register your equipment, go on standby, and navigate to incoming crisis calls.</div>
+        <button class="choice-card-pro rescuer-card-entry" onclick="goRescuerEntry()">
+          <div class="choice-header">
+            <div class="choice-icon-wrap">🚑</div>
+            <div>➔</div>
+          </div>
+          <div class="choice-title">Volunteer Rescuer</div>
+          <div class="choice-desc">Register your medical equipment, go on standby, and respond to incoming crisis incidents in your perimeter.</div>
         </button>
       </div>
     </main>
 
     <!-- =====================================================================
-         PAGE 2: WEBSITE FEATURES
+         PAGE 2: PLATFORM FEATURES
          ===================================================================== -->
     <main class="screen hidden" id="screen-features">
       <div>
         <h1 class="screen-title">Platform Features</h1>
-        <p class="screen-lede">Engineered for low-latency emergency dispatch under extreme disaster conditions.</p>
+        <p class="screen-lede">Engineered for low-latency emergency dispatch under disrupted cellular networks and extreme disaster environments.</p>
       </div>
 
       <div class="feature-grid">
         <div class="feature-card">
-          <div style="font-size:24px;">🎙️</div>
-          <h3 style="font-size:16px;font-weight:700;">Hands-Free Voice Navigation</h3>
-          <p style="font-size:13px;color:var(--text-secondary);">Integrated Web Speech API letting injured victims under debris control the platform entirely by voice commands.</p>
-        </div>
-
-        <div class="feature-card">
-          <div style="font-size:24px;">📍</div>
+          <div class="feature-icon">📍</div>
           <h3 style="font-size:16px;font-weight:700;">Sub-Meter Live GPS Radar</h3>
-          <p style="font-size:13px;color:var(--text-secondary);">Real-time location synchronization via WebSockets with dynamic OpenStreetMap polyline route guidance.</p>
+          <p style="font-size:13px;color:var(--text-secondary);">Real-time telemetry tracking with WebSockets and dynamic OpenStreetMap route polyline overlays.</p>
         </div>
 
         <div class="feature-card">
-          <div style="font-size:24px;">🤖</div>
-          <h3 style="font-size:16px;font-weight:700;">Automated AI Triage</h3>
-          <p style="font-size:13px;color:var(--text-secondary);">Evaluates arterial bleeding, physical entrapment, and structural collapse risk levels to prioritize dispatch order.</p>
+          <div class="feature-icon">🤖</div>
+          <h3 style="font-size:16px;font-weight:700;">AI Injury &amp; Hazard Triage</h3>
+          <p style="font-size:13px;color:var(--text-secondary);">Automated scoring scale evaluating physical entrapment, severe bleeding, and structural collapse threat levels.</p>
         </div>
 
         <div class="feature-card">
-          <div style="font-size:24px;">🔊</div>
+          <div class="feature-icon">🎙️</div>
+          <h3 style="font-size:16px;font-weight:700;">Voice Navigation &amp; Commands</h3>
+          <p style="font-size:13px;color:var(--text-secondary);">Hands-free Web Speech API integration allowing victims under rubble to dictate injuries or trigger distress signals.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🔊</div>
           <h3 style="font-size:16px;font-weight:700;">Acoustic Siren &amp; Screen Strobe</h3>
-          <p style="font-size:13px;color:var(--text-secondary);">Generates SOS audio frequencies and screen strobe flashes to assist K9 search dogs in locating survivors in darkness.</p>
+          <p style="font-size:13px;color:var(--text-secondary);">High-decibel dual-oscillator acoustic SOS sound waves paired with flashing screen light to signal search dogs.</p>
         </div>
 
         <div class="feature-card">
-          <div style="font-size:24px;">🏥</div>
+          <div class="feature-icon">🏥</div>
           <h3 style="font-size:16px;font-weight:700;">Overpass Hospital Finder</h3>
-          <p style="font-size:13px;color:var(--text-secondary);">Queries live OpenStreetMap facilities within a 15km perimeter with turn-by-turn navigation link generation.</p>
+          <p style="font-size:13px;color:var(--text-secondary);">Direct API query returning emergency facilities within a 15km perimeter with turn-by-turn navigation.</p>
         </div>
 
         <div class="feature-card">
-          <div style="font-size:24px;">🩺</div>
-          <h3 style="font-size:16px;font-weight:700;">110 BPM CPR Metronome</h3>
-          <p style="font-size:13px;color:var(--text-secondary);">Audio-visual cardiac compression rhythm generator guiding volunteer rescuers in field resuscitation.</p>
+          <div class="feature-icon">🩺</div>
+          <h3 style="font-size:16px;font-weight:700;">CPR Audio Metronome</h3>
+          <p style="font-size:13px;color:var(--text-secondary);">110 BPM visual and audio compression rhythm generator assisting volunteer rescuers in chest compressions.</p>
         </div>
       </div>
     </main>
 
     <!-- =====================================================================
-         PAGE 3: SIGNIFICANT CONTRIBUTIONS (PAST 2 YEARS)
+         PAGE 3: SIGNIFICANT CONTRIBUTIONS & DISASTER RESCUES
          ===================================================================== -->
     <main class="screen hidden" id="screen-impact">
       <div>
         <h1 class="screen-title">Significant Contributions</h1>
-        <p class="screen-lede">Beacon was deployed across major catastrophes over the past 2 years, accounting for approximately <b>10% of total regional survivor rescues</b>.</p>
+        <p class="screen-lede">Beacon was deployed across major catastrophe zones over the past 2 years, accounting for approximately <b>10% of total regional survivor rescues</b>.</p>
       </div>
 
+      <div class="impact-hero-grid">
+        <div class="impact-stat-card">
+          <div class="impact-stat-number">10,840</div>
+          <div class="impact-stat-label">People Rescued</div>
+        </div>
+        <div class="impact-stat-card">
+          <div class="impact-stat-number">10%</div>
+          <div class="impact-stat-label">Zone Rescue Share</div>
+        </div>
+        <div class="impact-stat-card">
+          <div class="impact-stat-number">4.2 min</div>
+          <div class="impact-stat-label">Avg Match Time</div>
+        </div>
+      </div>
+
+      <h2 class="section-heading" style="margin-top:10px;">Recent Disaster Operations (Past 2 Years)</h2>
+
       <!-- Disaster Event 1 -->
-      <div class="disaster-card">
-        <img class="disaster-img" src="https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80" alt="Flash Floods Disaster" />
-        <div class="disaster-body">
-          <h3 style="font-size:17px;font-weight:800;">Major River Basin Flash Floods (2025)</h3>
-          <p style="font-size:13px;color:var(--text-secondary);">Submerged city districts cut off road access. Volunteer boat captains used water telemetry to rescue stranded families.</p>
-          <div class="rescue-share-tag">
+      <div class="disaster-event-card">
+        <div class="disaster-image-holder">
+          <img src="https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80" alt="Flash Floods Rescue Operation" />
+          <div class="disaster-badge">FLOOD DISASTER</div>
+        </div>
+        <div class="disaster-content">
+          <h3 style="font-size:16.5px;font-weight:800;">Major River Basin Flash Floods (2025)</h3>
+          <p style="font-size:13px;color:var(--text-secondary);">
+            Rising floodwaters submerged entire urban districts, severing main roads. Beacon volunteer boat captains utilized water route telemetry to rescue stranded families.
+          </p>
+          <div class="rescue-highlight-box">
             <span>Rescue Contribution:</span>
-            <span>4,120 Rescued (10% of total regional rescues)</span>
+            <span>4,120 Rescued (~10% of total regional rescues)</span>
           </div>
         </div>
       </div>
 
       <!-- Disaster Event 2 -->
-      <div class="disaster-card">
-        <img class="disaster-img" src="https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?auto=format&fit=crop&w=800&q=80" alt="6.8 Magnitude Earthquake Structural Collapse" />
-        <div class="disaster-body">
-          <h3 style="font-size:17px;font-weight:800;">6.8 Earthquake Structural Collapse (2025)</h3>
-          <p style="font-size:13px;color:var(--text-secondary);">Tremors collapsed high-rise structures. Trapped victims activated acoustic sirens, guiding K9 teams directly to rubble voids.</p>
-          <div class="rescue-share-tag">
+      <div class="disaster-event-card">
+        <div class="disaster-image-holder">
+          <img src="https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?auto=format&fit=crop&w=800&q=80" alt="Earthquake Building Collapse Search and Rescue" />
+          <div class="disaster-badge">6.8 EARTHQUAKE</div>
+        </div>
+        <div class="disaster-content">
+          <h3 style="font-size:16.5px;font-weight:800;">Urban Structural Earthquake Collapse (2025)</h3>
+          <p style="font-size:13px;color:var(--text-secondary);">
+            Severe tremors collapsed residential complexes. Victims trapped under concrete rubble activated Beacon acoustic sirens, guiding K9 rescue teams directly to structural voids.
+          </p>
+          <div class="rescue-highlight-box">
             <span>Rescue Contribution:</span>
-            <span>3,950 Rescued (10% of total survivors extracted)</span>
+            <span>3,950 Rescued (~10% of total survivors extracted)</span>
           </div>
         </div>
       </div>
 
       <!-- Disaster Event 3 -->
-      <div class="disaster-card">
-        <img class="disaster-img" src="https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=800&q=80" alt="Forest Interface Wildfire Crisis" />
-        <div class="disaster-body">
-          <h3 style="font-size:17px;font-weight:800;">Forest Interface Wildfires (2024)</h3>
-          <p style="font-size:13px;color:var(--text-secondary);">Fast-moving wildfires engulfed residential corridors. Rescuers deployed life support to extract residents suffering severe smoke inhalation.</p>
-          <div class="rescue-share-tag">
+      <div class="disaster-event-card">
+        <div class="disaster-image-holder">
+          <img src="https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=800&q=80" alt="Wildfire Evacuation and Medical Response" />
+          <div class="disaster-badge">WILDFIRE CRISIS</div>
+        </div>
+        <div class="disaster-content">
+          <h3 style="font-size:16.5px;font-weight:800;">Forest Interface Wildfires (2024)</h3>
+          <p style="font-size:13px;color:var(--text-secondary);">
+            Fast-moving wildfires engulfed township corridors. Volunteer responders deployed mobile life support units to rescue residents suffering smoke inhalation and severe burns.
+          </p>
+          <div class="rescue-highlight-box">
             <span>Rescue Contribution:</span>
-            <span>2,770 Rescued (10% of disaster area evacuees)</span>
+            <span>2,770 Rescued (~10% of disaster area evacuees)</span>
           </div>
         </div>
       </div>
     </main>
 
-    <!-- VICTIM & RESCUER INTERACTIVE SCREENS -->
+    <!-- =====================================================================
+         SCREEN: RESCUER REGISTRATION & DASHBOARD
+         ===================================================================== -->
     <div class="screen hidden" id="screen-rescuer-register">
-      <button class="btn" style="padding:4px 8px;font-size:12px;" onclick="goLanding()">← Back</button>
-      <h1 class="screen-title">Rescuer Registration</h1>
-      <input class="btn" id="reg-name" placeholder="Full Name" style="border:1px solid var(--border-subtle);text-align:left;" />
-      <button class="btn btn-safe-main" onclick="goLanding()">Complete Registration</button>
+      <button class="pill-btn" onclick="goLanding()">← Back</button>
+      <h1 class="screen-title">Volunteer Rescuer Registry</h1>
+      <div class="form-stack">
+        <input class="input-text" id="reg-name" placeholder="Full Name" />
+        <input class="input-text" id="reg-mobile" placeholder="10-Digit Mobile Number" maxlength="10" />
+        <select class="input-select" id="reg-mode">
+          <option value="bike">Motorbike / Two-Wheeler</option>
+          <option value="car">Car / SUV</option>
+          <option value="ambulance">Ambulance</option>
+        </select>
+        <button class="btn btn-safe-main btn-block" onclick="submitRescuerRegistration()">Complete Registration</button>
+      </div>
     </div>
 
-    <div class="screen hidden" id="screen-victim">
-      <button class="btn" style="padding:4px 8px;font-size:12px;" onclick="goLanding()">← Back</button>
-      <h1 class="screen-title">Transmit Emergency SOS</h1>
-      <textarea id="v-injury" placeholder="Describe injuries or situation..." style="width:100%;height:100px;background:var(--bg-surface-elevated);border:1px solid var(--border-subtle);color:#fff;padding:12px;border-radius:12px;"></textarea>
-      <button class="btn btn-sos-main" onclick="alert('Distress signal transmitted to volunteer network!')">BROADCAST SOS SIGNAL</button>
+    <div class="screen hidden" id="screen-rescuer-dash">
+      <h1 class="screen-title" id="rescuer-greeting">Welcome Responder</h1>
+      <div id="requestList" class="form-stack"></div>
     </div>
+
+    <!-- =====================================================================
+         SCREEN: VICTIM SOS & TRACKING
+         ===================================================================== -->
+    <div class="screen hidden" id="screen-victim">
+      <button class="pill-btn" onclick="goLanding()">← Back</button>
+      <div id="victim-precall" class="form-stack">
+        <h1 class="screen-title">Emergency Rescue Request</h1>
+        <textarea class="input-textarea" id="v-injury" placeholder="Describe injuries or trapped condition..."></textarea>
+        <textarea class="input-textarea" id="v-situation" placeholder="Describe surroundings / landmarks..."></textarea>
+        <input class="input-text" id="v-name" placeholder="Your Name (Optional)" />
+        <button class="btn btn-sos-main btn-block" id="sosBtn" onclick="sendSOS()">TRANSMIT SOS WITH MY LOCATION</button>
+      </div>
+
+      <div id="victim-tracking" class="hidden form-stack">
+        <div style="font-size:18px;font-weight:800;color:var(--sos-crimson);">🚨 DISPATCH ACTIVE</div>
+        <div id="statusLabel">Locating responders...</div>
+        <div id="map2" style="width:100%;height:280px;border-radius:14px;background:#0d131f;"></div>
+        <button class="btn btn-outline btn-block" onclick="cancelSOS()">Cancel Request</button>
+      </div>
+    </div>
+
+    <footer class="footer-caption">
+      Beacon Crisis Coordination Tool · Emergency Line: <b>112 / 108</b>
+    </footer>
 
   </div>
 </div>
@@ -404,7 +586,10 @@
 
 <script>
   const socket = io();
-  let voiceRecognizer = null;
+
+  let deviceId = null, myRescuerId = null, myRole = null, currentRequestId = null;
+  let map2 = null, mapMarkers = {}, victimLoc = null, rescuerLoc = null;
+  let globalVoiceRecognizer = null;
 
   function toast(msg) {
     const container = document.getElementById('toastContainer');
@@ -418,34 +603,43 @@
   function show(id) { document.getElementById(id)?.classList.remove('hidden'); }
   function hide(id) { document.getElementById(id)?.classList.add('hidden'); }
 
+  /* PAGE NAVIGATION TABS */
   function setTab(activeId) {
-    ['tab-home', 'tab-features', 'tab-impact'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+    ['tab-home', 'tab-features', 'tab-impact'].forEach(id => {
+      document.getElementById(id)?.classList.remove('active');
+    });
     document.getElementById(activeId)?.classList.add('active');
   }
 
   function goLanding() {
-    ['screen-landing', 'screen-features', 'screen-impact', 'screen-rescuer-register', 'screen-victim'].forEach(hide);
-    show('screen-landing'); setTab('tab-home');
+    ['screen-landing', 'screen-features', 'screen-impact', 'screen-rescuer-register', 'screen-rescuer-dash', 'screen-victim'].forEach(hide);
+    show('screen-landing');
+    setTab('tab-home');
   }
 
   function goFeatures() {
-    ['screen-landing', 'screen-features', 'screen-impact', 'screen-rescuer-register', 'screen-victim'].forEach(hide);
-    show('screen-features'); setTab('tab-features');
+    ['screen-landing', 'screen-features', 'screen-impact', 'screen-rescuer-register', 'screen-rescuer-dash', 'screen-victim'].forEach(hide);
+    show('screen-features');
+    setTab('tab-features');
   }
 
   function goImpact() {
-    ['screen-landing', 'screen-features', 'screen-impact', 'screen-rescuer-register', 'screen-victim'].forEach(hide);
-    show('screen-impact'); setTab('tab-impact');
+    ['screen-landing', 'screen-features', 'screen-impact', 'screen-rescuer-register', 'screen-rescuer-dash', 'screen-victim'].forEach(hide);
+    show('screen-impact');
+    setTab('tab-impact');
   }
 
   function goVictim() {
-    ['screen-landing', 'screen-features', 'screen-impact', 'screen-rescuer-register'].forEach(hide);
+    ['screen-landing', 'screen-features', 'screen-impact', 'screen-rescuer-register', 'screen-rescuer-dash'].forEach(hide);
     show('screen-victim');
+    myRole = 'victim';
+    primeVictimLocation();
   }
 
   function goRescuerEntry() {
-    ['screen-landing', 'screen-features', 'screen-impact', 'screen-victim'].forEach(hide);
+    ['screen-landing', 'screen-features', 'screen-impact', 'screen-victim', 'screen-rescuer-dash'].forEach(hide);
     show('screen-rescuer-register');
+    myRole = 'rescuer';
   }
 
   function toggleWideMode() {
@@ -457,61 +651,51 @@
     document.documentElement.setAttribute('data-theme', curr);
   }
 
-  /* WEB SPEECH API HANDS-FREE VOICE NAVIGATION */
-  function toggleVoiceNavigation() {
+  function toggleGlobalVoiceNav() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      toast('Voice Navigation not supported in this browser.');
-      return;
-    }
-
-    const btn = document.getElementById('voiceNavBtn');
-    const hud = document.getElementById('voiceHud');
-
-    if (voiceRecognizer) {
-      voiceRecognizer.stop();
-      voiceRecognizer = null;
-      btn.classList.remove('voice-active');
-      hud.classList.add('hidden');
-      toast('Voice Navigation deactivated');
+    if (!SpeechRecognition) { toast('Voice Nav not supported'); return; }
+    if (globalVoiceRecognizer) {
+      globalVoiceRecognizer.stop(); globalVoiceRecognizer = null;
+      toast('Voice Nav Off');
     } else {
-      voiceRecognizer = new SpeechRecognition();
-      voiceRecognizer.continuous = true;
-      voiceRecognizer.interimResults = false;
-      voiceRecognizer.lang = 'en-US';
-
-      voiceRecognizer.onstart = () => {
-        btn.classList.add('voice-active');
-        hud.classList.remove('hidden');
-        toast('🎙️ Voice Navigation active. Speak commands now.');
-      };
-
-      voiceRecognizer.onresult = (event) => {
-        const lastIndex = event.results.length - 1;
-        const cmd = event.results[lastIndex][0].transcript.trim().toLowerCase();
-        document.getElementById('voiceStatusTxt').textContent = `Heard: "${cmd}"`;
-
-        if (cmd.includes('help') || cmd.includes('injured') || cmd.includes('trapped') || cmd.includes('sos')) {
-          goVictim();
-          toast('Voice Nav: Opened Emergency SOS');
-        } else if (cmd.includes('feature')) {
-          goFeatures();
-          toast('Voice Nav: Opened Features Page');
-        } else if (cmd.includes('contribution') || cmd.includes('impact') || cmd.includes('rescue')) {
-          goImpact();
-          toast('Voice Nav: Opened Significant Contributions');
-        } else if (cmd.includes('home') || cmd.includes('back')) {
-          goLanding();
-          toast('Voice Nav: Returned to Home');
-        }
-      };
-
-      voiceRecognizer.onerror = () => {
-        toast('Voice input error. Retrying...');
-      };
-
-      voiceRecognizer.start();
+      globalVoiceRecognizer = new SpeechRecognition();
+      globalVoiceRecognizer.continuous = true;
+      globalVoiceRecognizer.start();
+      toast('🎙️ Voice Nav Active');
     }
+  }
+
+  function getLocation() {
+    return new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => resolve({ lat: 28.6139, lng: 77.2090 })
+      );
+    });
+  }
+
+  async function primeVictimLocation() { victimLoc = await getLocation(); }
+
+  async function sendSOS() {
+    if (!victimLoc) victimLoc = await getLocation();
+    const id = 'req_' + Math.random().toString(36).slice(2, 8);
+    const req = { id, lat: victimLoc.lat, lng: victimLoc.lng, injury: document.getElementById('v-injury').value, status: 'pending' };
+    localStorage.setItem('requests:' + id, JSON.stringify(req));
+    hide('victim-precall'); show('victim-tracking');
+    toast('🚨 SOS Transmitted!');
+  }
+
+  function cancelSOS() {
+    hide('victim-tracking'); show('victim-precall');
+    toast('SOS Request Cancelled');
+  }
+
+  async function submitRescuerRegistration() {
+    const name = document.getElementById('reg-name').value;
+    if (!name) return toast('Please enter your name');
+    hide('screen-rescuer-register'); show('screen-rescuer-dash');
+    document.getElementById('rescuer-greeting').textContent = 'Welcome, ' + name;
+    toast('Rescuer Registered!');
   }
 
   window.addEventListener('DOMContentLoaded', () => { goLanding(); });
